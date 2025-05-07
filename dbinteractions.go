@@ -79,9 +79,11 @@ func ListCollections() []string {
 	processError(err)
 	return collection
 }
-
-func FindCollection(collectionName string) ([]bson.Raw, error) {
-	var collectionRaw []bson.Raw
+func AddColletion(collectionName string) {
+	database.CreateCollection(context.TODO(), collectionName)
+}
+func FindCollection(collectionName string) ([]bson.M, error) {
+	var collectionRaw []bson.M
 	collection := database.Collection(collectionName)
 	cursor, err := collection.Find(context.TODO(), bson.M{})
 	processError(err)

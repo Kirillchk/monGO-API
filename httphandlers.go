@@ -16,7 +16,6 @@ func InitHandlers() {
 	http.Handle("/DB/document", http.HandlerFunc(handleDocument))
 
 	http.Handle("/dashboard", http.FileServer(http.Dir("./dist")))
-
 }
 
 type UserBody struct {
@@ -61,11 +60,15 @@ func handleListCollections(res http.ResponseWriter, req *http.Request) {
 func handleCollection(res http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
 	colectionName := query.Get("collection")
-	if req.Method == http.MethodDelete {
-		DeleteCollection(colectionName)
-	} else {
+	switch req.Method {
+	case http.MethodGet:
 		bson, _ := FindCollection(colectionName)
-		res.Write([]byte(fmt.Sprint(bson)))
+		result, _ := json.Marshal(bson)
+		res.Write([]byte(result))
+	case http.MethodDelete:
+		DeleteCollection(colectionName)
+	case http.MethodPost:
+		AddColletion(colectionName)
 	}
 }
 func handleDocument(res http.ResponseWriter, req *http.Request) {
