@@ -9,13 +9,14 @@ import (
 )
 
 func InitHandlers() {
+	http.Handle("/", http.StripPrefix("/dashboard/", http.FileServer(http.Dir("./dist"))))
+
 	http.Handle("/DB/reguser", http.HandlerFunc(handleRegUser))
 	http.Handle("/DB/loguser", http.HandlerFunc(handleLogUser))
 	http.Handle("/DB/collections", http.HandlerFunc(handleListCollections))
 	http.Handle("/DB/collection", http.HandlerFunc(handleCollection))
 	http.Handle("/DB/document", http.HandlerFunc(handleDocument))
 
-	http.Handle("/dashboard", http.FileServer(http.Dir("./dist")))
 }
 
 type UserBody struct {
