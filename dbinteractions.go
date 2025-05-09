@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -10,9 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-const conectionString = "mongodb://localhost:27017"
-const DBName = "MonGO"
 
 var globclient *mongo.Client
 var database *mongo.Database
@@ -23,8 +21,11 @@ type User struct {
 	JWT      string
 }
 
-func InitDB() error {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(conectionString))
+func InitDB(DBport string) error {
+	var conectionString = fmt.Sprintf("mongodb://localhost:%v", DBport)
+	fmt.Print(conectionString, "mongodb://localhost:27017")
+	const DBName = "MonGO"
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		return err
 	}

@@ -1,13 +1,19 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 )
 
 func main() {
-	InitDB()
+	port := flag.Int("port", 8080, "Port to listen on")
+	DBport := flag.Int("DBport", 27017, "Port to listen on")
+	flag.Parse()
+	portstring := fmt.Sprintf(":%d", *port)
+	DBportstring := fmt.Sprintf("%d", *DBport)
+	InitDB(DBportstring)
 	InitHandlers()
-	fmt.Println("http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	fmt.Printf("http://localhost%s/", portstring)
+	http.ListenAndServe(portstring, nil)
 }
