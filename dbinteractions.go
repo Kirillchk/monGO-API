@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -24,17 +23,14 @@ type User struct {
 	JWT      string
 }
 
-func processError(err error) {
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
-func InitDB() {
+func InitDB() error {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(conectionString))
-	processError(err)
+	if err != nil {
+		return err
+	}
 	globclient = client
 	database = globclient.Database(DBName)
+	return nil
 }
 
 // User interactions
@@ -74,25 +70,28 @@ func AddUser(username string, password string) (string, error) {
 }
 
 // Collections interactions
-func ListCollections() []string {
+func ListCollections() ([]string, error) {
 	collection, err := database.ListCollectionNames(context.TODO(), bson.D{})
-	processError(err)
-	return collection
+	return collection, err
 }
-func AddColletion(collectionName string) {
-	database.CreateCollection(context.TODO(), collectionName)
+func AddColletion(collectionName string) error {
+	return database.CreateCollection(context.TODO(), collectionName)
 }
 func FindCollection(collectionName string) ([]bson.M, error) {
 	var collectionRaw []bson.M
 	collection := database.Collection(collectionName)
 	cursor, err := collection.Find(context.TODO(), bson.M{})
-	processError(err)
+	if err != nil {
+		return nil, err
+	}
 	err = cursor.All(context.TODO(), &collectionRaw)
-	processError(err)
+	if err != nil {
+		return nil, err
+	}
 	return collectionRaw, err
 }
-func DeleteCollection(collectionName string) {
-	database.Collection(collectionName).Drop(context.TODO())
+func DeleteCollection(collectionName string) error {
+	return database.Collection(collectionName).Drop(context.TODO())
 }
 
 // Document interactions
@@ -104,13 +103,15 @@ type Document struct {
 func (d *Document) CollRef() *mongo.Collection {
 	return database.Collection(d.collection)
 }
-func (d *Document) Add() {
-	d.CollRef().InsertOne(context.TODO(), d.document)
+func (d *Document) Add() error {
+	_, err := d.CollRef().InsertOne(context.TODO(), d.document)
+	return err
 }
-func (d *Document) Update(newDocument bson.M) {
+func (d *Document) Update(newDocument bson.M) error {
 	_, err := d.CollRef().UpdateOne(context.TODO(), d.document, newDocument)
-	fmt.Println(err)
+	return err
 }
-func (d *Document) Delete() {
-	d.CollRef().DeleteOne(context.TODO(), d.document)
+func (d *Document) Delete() error {
+	_, err := d.CollRef().DeleteOne(context.TODO(), d.document)
+	return err
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func InitHandlers() {
-	http.Handle("/", http.StripPrefix("/dashboard/", http.FileServer(http.Dir("./dist"))))
+	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./dist"))))
 
 	http.Handle("/DB/reguser", http.HandlerFunc(handleRegUser))
 	http.Handle("/DB/loguser", http.HandlerFunc(handleLogUser))
@@ -56,7 +56,8 @@ func handleLogUser(res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte(jwt))
 }
 func handleListCollections(res http.ResponseWriter, req *http.Request) {
-	json.NewEncoder(res).Encode(ListCollections())
+	result, _ := ListCollections()
+	json.NewEncoder(res).Encode(result)
 }
 func handleCollection(res http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
