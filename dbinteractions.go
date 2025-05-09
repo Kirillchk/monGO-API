@@ -23,9 +23,8 @@ type User struct {
 
 func InitDB(DBport string) error {
 	var conectionString = fmt.Sprintf("mongodb://localhost:%v", DBport)
-	fmt.Print(conectionString, "mongodb://localhost:27017")
 	const DBName = "MonGO"
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(conectionString))
 	if err != nil {
 		return err
 	}
