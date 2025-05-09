@@ -22,7 +22,7 @@ type User struct {
 }
 
 func InitDB(DBport string) error {
-	var conectionString = fmt.Sprintf("mongodb://localhost:%v", DBport)
+	var conectionString = fmt.Sprintf("mongodb://mongodb:%v", DBport)
 	const DBName = "MonGO"
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(conectionString))
 	if err != nil {
