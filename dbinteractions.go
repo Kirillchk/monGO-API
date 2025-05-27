@@ -34,15 +34,15 @@ func InitDB(DBport string) error {
 }
 
 // User interactions
-func FindUser(username string) (string, error) {
+func FindUser(username string) (User, error) {
 	collection := database.Collection("users")
-	filter := bson.M{"login": username}
+	filter := bson.M{"Login": username}
 	var userInfo User
 	res := collection.FindOne(context.TODO(), filter).Decode(&userInfo)
 	if res == mongo.ErrNoDocuments {
-		return "", mongo.ErrNoDocuments
+		return User{}, mongo.ErrNoDocuments
 	} else {
-		return userInfo.JWT, nil
+		return userInfo, nil
 	}
 }
 func AddUser(username string, password string) (string, error) {

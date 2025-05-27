@@ -11,19 +11,25 @@ import (
 func InitHandlers() {
 	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./dist"))))
 
-	http.Handle("/DB/reguser", http.HandlerFunc(handleRegUser))
-	http.Handle("/DB/loguser", http.HandlerFunc(handleLogUser))
+	http.Handle("/user/reg", http.HandlerFunc(handleRegUser))
+	http.Handle("/user/log", http.HandlerFunc(handleLogUser))
+	http.Handle("/user/jwt", http.HandlerFunc(handleUserJWT))
+
 	http.Handle("/DB/collections", http.HandlerFunc(handleListCollections))
 	http.Handle("/DB/collection", http.HandlerFunc(handleCollection))
 	http.Handle("/DB/document", http.HandlerFunc(handleDocument))
-
 }
 
 type UserBody struct {
 	Login    string
 	Password string
 }
+type UserBodyWJWT struct {
+	Login string
+	JWT   string
+}
 
+// User handlers
 func handleRegUser(res http.ResponseWriter, req *http.Request) {
 	var данные UserBody
 	ошибка := json.NewDecoder(req.Body).Decode(&данные)
@@ -47,14 +53,37 @@ func handleLogUser(res http.ResponseWriter, req *http.Request) {
 	var данные UserBody
 	ошибка := json.NewDecoder(req.Body).Decode(&данные)
 	if ошибка != nil {
+		http.Error(res, "Malformed data", http.StatusBadRequest)
 		return
 	}
-	jwt, err := AddUser(данные.Login, данные.Password)
+	user, err := FindUser(данные.Login)
 	if err != nil {
-		http.Error(res, "User already exists", http.StatusBadRequest)
+		http.Error(res, fmt.Sprintf("User not found:%v", err), http.StatusNotFound)
 	}
-	res.Write([]byte(jwt))
+	if user.Password != данные.Password {
+		http.Error(res, "incorrect password", http.StatusUnauthorized)
+	}
+	res.Write([]byte(user.JWT))
 }
+func handleUserJWT(res http.ResponseWriter, req *http.Request) {
+	var data UserBodyWJWT
+	err := json.NewDecoder(req.Body).Decode(&data)
+	if err != nil {
+		http.Error(res, "Decoding error", http.StatusBadRequest)
+		return
+	}
+	DBuser, err := FindUser(data.Login)
+	if err != nil {
+		http.Error(res, "User wasnt found", http.StatusNotFound)
+		return
+	}
+	if DBuser.JWT != data.JWT {
+		http.Error(res, "JWT is incorrect", http.StatusUnauthorized)
+		return
+	}
+}
+
+// Database handlers
 func handleListCollections(res http.ResponseWriter, req *http.Request) {
 	result, _ := ListCollections()
 	json.NewEncoder(res).Encode(result)
